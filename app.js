@@ -1,7 +1,10 @@
 /*
  * 画面表示だけを担当する（判定ロジックは checker.js の単一実装を呼ぶ）。
  * ファイルは FileReader／File.arrayBuffer でブラウザ内だけで読み込み、送信しない。
- * 利用回数の計測コードは入れていない（measurement.md M5 により公開工程で確定する）。
+ * 利用回数の計測（measurement.md M5）：診断を1回実行して結果を表示した直後にだけ、
+ * GoatCounter（自前ホストの count.js）へイベント path='check-run' を1回送る。
+ * ページビューは数えない（index.html の data-goatcounter-settings で no_onload）。
+ * ファイル名・診断結果・行数などは送らない（path／title は固定文字列、referrer は空）。
  */
 (function () {
   'use strict';
@@ -75,10 +78,22 @@
     result.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
+  // 診断実行の匿名イベント。固定値のみを渡し、ファイル由来の値は一切含めない。
+  // count.js が読み込めない（広告ブロッカー等）場合は何もしない（診断には影響させない）。
+  function countCheckRun() {
+    try {
+      var gc = window.goatcounter;
+      if (gc && typeof gc.count === 'function') {
+        gc.count({ path: 'check-run', title: 'check-run', referrer: '', event: true });
+      }
+    } catch (e) { /* 計測の失敗は無視する */ }
+  }
+
   function handle(file) {
     if (!file) return;
     readBytes(file).then(function (bytes) {
       render(file, Checker.check(bytes, { fileName: file.name }));
+      countCheckRun();
     }).catch(function (e) {
       result.classList.remove('hidden');
       document.getElementById('verdict').textContent = 'ファイルを読み込めませんでした: ' + (e && e.message ? e.message : e);

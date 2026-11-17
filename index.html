@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://kakunin-tools.goatcounter.com; connect-src https://kakunin-tools.goatcounter.com; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <title>Shopify商品CSV 事前チェッカー（非公式・ブラウザ内処理）</title>
 <meta name="description" content="Shopifyの商品CSV（標準テンプレート・バリエーションなし・新規下書き登録）を、公式ヘルプの仕様に照らしてブラウザ内で事前チェックする非公式の無料ツールです。ファイルは送信されません。">
@@ -35,7 +35,8 @@
     <div class="drop" id="drop">
       <p><label for="file"><strong>商品CSVファイルを選ぶか、ここにドラッグ＆ドロップしてください</strong></label></p>
       <input type="file" id="file" accept=".csv,text/csv">
-      <p class="privacy">ファイルはお使いのブラウザの中だけで読み込んで検査します。ファイルの内容をどこにも送信しません（このページは外部への通信や外部リソースの読み込みを行わない設定にしています）。</p>
+      <p class="privacy">ファイルはお使いのブラウザの中だけで読み込んで検査します。ファイルの内容・ファイル名・チェック結果はどこにも送信しません。</p>
+      <p class="privacy">利用回数の集計のため、チェックを実行したことだけを匿名のイベント（「check-run」）として、アクセス解析サービス GoatCounter（kakunin-tools.goatcounter.com）へ1回送信します。ページの閲覧そのものは数えず、Cookie も使いません。送信には、通信に伴って通常送られる情報（IPアドレス、ブラウザの種類、画面サイズ、ページURLのクエリ部分など）が含まれます。</p>
     </div>
     <noscript><p class="notice">このチェッカーの実行には JavaScript が必要です。</p></noscript>
   </section>
@@ -88,6 +89,7 @@
 </footer>
 
 <script src="checker.js"></script>
+<script data-goatcounter="https://kakunin-tools.goatcounter.com/count" data-goatcounter-settings='{"no_onload": true, "no_events": true}' src="count.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
