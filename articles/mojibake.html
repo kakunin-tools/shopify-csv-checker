@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Shopify商品CSVの文字化け：原因と直し方（非公式ガイド）</title>
+<meta name="description" content="Shopifyに商品CSVをインポートしたら文字化けした場合に、公式ヘルプの記述の範囲で原因の可能性と直し方をまとめた非公式ガイドです。">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site">
+  <p class="title">Shopify商品CSV 事前チェッカー（非公式）</p>
+  <nav class="site">
+    <a href="../index.html">チェッカー</a>
+    <a href="mojibake.html">文字化けの原因と直し方</a>
+    <a href="invalid-csv-header.html">「無効なCSVヘッダー」の意味と直し方</a>
+    <a href="pre-import-checklist.html">インポート前チェック手順</a>
+  </nav>
+</header>
+<main>
+  <h1>Shopify商品CSVの文字化け：原因と直し方</h1>
+
+  <div class="notice">
+    <p>この記事は非公式の解説です。Shopify社とは提携・推奨等の関係はありません。Shopify の公式サイトは <a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a> です。</p>
+    <p>内容は、2026年11月17日時点で確認した Shopify ヘルプセンターの公開ページの記述の範囲に限っています。公式の記述は変更されることがあります。</p>
+  </div>
+
+  <h2>公式ヘルプが示していること</h2>
+  <ul>
+    <li>商品CSVファイルは <strong>UTF-8</strong> でなければなりません（CSVファイルの一般説明、商品CSVの説明、インポート手順の各ページ）。</li>
+    <li>インポート後に予期しない文字や記号が表示される場合、ファイルが <strong>UTF-8 で保存されていない可能性</strong>がある、と案内されています。対処として、UTF-8 で保存し直すことが案内されています。</li>
+    <li>インポート時の「Illegal quoting」というエラーは、UTF-8 でエンコードされていないカンマや引用符が原因で起きる、と説明されています。</li>
+  </ul>
+
+  <h2>原因の可能性</h2>
+  <p>公式ヘルプから言えるのは、<strong>ファイルが UTF-8 で保存されていない可能性</strong>がある、というところまでです。表計算ソフトなどで保存したときの文字コードが UTF-8 になっていないと、日本語などの文字が正しく読み取られないことがあります。</p>
+  <p>具体的にどの文字コードで保存されていたのかは、公式ヘルプでは特定されていません。この記事でも特定の文字コード名を原因として断定しません。</p>
+
+  <h2>直し方</h2>
+  <ol>
+    <li>元のデータ（表計算ソフトのファイルなど）を開きます。</li>
+    <li>CSV として保存するときに、文字コード（エンコード）として <strong>UTF-8</strong> を選んで保存し直します。具体的な操作はお使いのソフトの説明を確認してください。</li>
+    <li>保存し直したファイルを、インポートの前に<a href="../index.html">事前チェッカー</a>で確認します。UTF-8 として読めないバイト列があると「仕様不適合（C01）」として、その位置（物理行・先頭からのバイト位置）を表示します。</li>
+    <li>インポート後に文字化けした商品がすでにある場合は、データを直したうえで改めて対応してください。</li>
+  </ol>
+
+  <h2>BOM（バイトオーダーマーク）について</h2>
+  <p>UTF-8 のファイルの先頭に「BOM」と呼ばれる3バイト（EF BB BF）が付くことがあります。<strong>BOM 付きの UTF-8 が受理されるかどうか、BOM がエラーの原因になるかどうかは、公式ヘルプでは確認できていません</strong>（2026年11月17日に公式ヘルプを検索しましたが、該当する記述は見つかりませんでした）。</p>
+  <p>そのため事前チェッカーは、BOM があることを<strong>事実として検出し「注意」として表示</strong>するだけにしています。「BOM は禁止されている」といった判定はしていません。文字化けの切り分けの参考にしてください。</p>
+
+  <h2>改行の形式について（参考）</h2>
+  <p>商品CSVの説明ページでは LF 形式の改行で保存するよう案内されていますが、公式のサンプルCSVの実ファイルは CRLF 形式の改行でした。このため事前チェッカーは改行形式を判定に使わず、参考情報として表示するだけにしています。</p>
+
+  <h2>まとめ</h2>
+  <ul>
+    <li>商品CSVは UTF-8 で保存する（公式の必須条件）。</li>
+    <li>文字化けしたら、UTF-8 で保存されていない可能性を疑い、UTF-8 で保存し直す。</li>
+    <li>BOM の扱いは公式ヘルプで確認できていないため、断定しない。</li>
+  </ul>
+  <p><a href="../index.html">→ 事前チェッカーでCSVを確認する</a>（ブラウザ内だけで処理し、ファイルは送信しません。インポートの成功を保証するものではありません）</p>
+
+  <h2>関連記事</h2>
+  <ul>
+    <li><a href="invalid-csv-header.html">「Invalid CSV header（無効なCSVヘッダー）」エラーの意味と直し方</a></li>
+    <li><a href="pre-import-checklist.html">インポート前にやる事前チェック手順</a></li>
+  </ul>
+</main>
+<footer class="site">
+  <p>本サイトは非公式のツール・記事です。Shopify社による提供・提携・推奨を受けたものではありません。公式サイト：<a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a></p>
+</footer>
+</body>
+</html>

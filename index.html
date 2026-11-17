@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Shopify商品CSV 事前チェッカー（非公式・ブラウザ内処理）</title>
+<meta name="description" content="Shopifyの商品CSV（標準テンプレート・バリエーションなし・新規下書き登録）を、公式ヘルプの仕様に照らしてブラウザ内で事前チェックする非公式の無料ツールです。ファイルは送信されません。">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site">
+  <p class="title">Shopify商品CSV 事前チェッカー（非公式）</p>
+  <p class="sub">公式ヘルプの記述に基づく、インポート前の仕様ベースの事前チェック</p>
+  <nav class="site">
+    <a href="index.html">チェッカー</a>
+    <a href="articles/mojibake.html">文字化けの原因と直し方</a>
+    <a href="articles/invalid-csv-header.html">「無効なCSVヘッダー」の意味と直し方</a>
+    <a href="articles/pre-import-checklist.html">インポート前チェック手順</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Shopify商品CSVをインポート前にチェックする</h1>
+
+  <section class="notice" aria-label="このツールについて">
+    <p class="scope">検査範囲：対象＝Shopify商品CSV・標準テンプレート・バリエーションなし・1商品1レコード・新規下書き登録のみ。</p>
+    <p>このツールは<strong>仕様ベースの事前チェック</strong>です。公式ヘルプに書かれた形式・必須条件との食い違いを見つけるためのもので、<strong>インポートの成功を保証するものではありません</strong>。実際のストアでの動作確認はしていません。</p>
+    <p>このツールは<strong>非公式</strong>のツールで、Shopify社とは提携・推奨等の関係はありません。Shopify の公式サイトは <a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a> です。</p>
+    <p>行数上限等は未検査です。ハンドルの文字種は一部未検査です。その他の未検査事項はチェック結果の「対象外・未検査」に毎回表示します。</p>
+  </section>
+
+  <section aria-label="ファイルの選択">
+    <div class="drop" id="drop">
+      <p><label for="file"><strong>商品CSVファイルを選ぶか、ここにドラッグ＆ドロップしてください</strong></label></p>
+      <input type="file" id="file" accept=".csv,text/csv">
+      <p class="privacy">ファイルはお使いのブラウザの中だけで読み込んで検査します。ファイルの内容をどこにも送信しません（このページは外部への通信や外部リソースの読み込みを行わない設定にしています）。</p>
+    </div>
+    <noscript><p class="notice">このチェッカーの実行には JavaScript が必要です。</p></noscript>
+  </section>
+
+  <section id="result" class="hidden" aria-live="polite">
+    <h2>チェック結果</h2>
+    <p class="meta" id="meta"></p>
+    <p class="verdict" id="verdict"></p>
+    <ul class="counts" id="counts"></ul>
+    <table class="result">
+      <thead>
+        <tr><th scope="col">判定</th><th scope="col">項目</th><th scope="col">物理行</th><th scope="col">列名</th><th scope="col">原因</th><th scope="col">期待形式・補足</th></tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <p class="muted">「物理行」はファイルの何行目かを表します（1行目＝列ヘッダー）。値の中に改行がある場合は、そのレコードが始まる行です。</p>
+  </section>
+
+  <h2>判定の3区分</h2>
+  <dl class="legend">
+    <dt><span class="badge err">✖ 仕様不適合</span></dt>
+    <dd>公式ヘルプの明示的な必須条件・形式・有効値に反していると、公式の記述から断定できるもの。物理行・列名・原因・期待形式を表示します。</dd>
+    <dt><span class="badge warn">▲ 注意</span></dt>
+    <dd>仕様違反とは断定できないが、公式の記述との不一致の可能性、公式資料どうしの食い違い、または想定用途（新規の下書き登録）とのずれがあるもの。公式では確認できていない点はその旨を書いています。</dd>
+    <dt><span class="badge na">― 対象外・未検査</span></dt>
+    <dd>このチェッカーの対象範囲外か、公式の根拠がなく検査していないもの。<strong>合格を意味しません。</strong></dd>
+  </dl>
+  <p>仕様不適合が0件でも「合格」ではありません。注意と対象外・未検査の項目も確認してください。</p>
+
+  <h2>主な検査内容</h2>
+  <ul>
+    <li>ファイル全体：文字コード（UTF-8 として読めるか）、BOM の有無（事実の表示のみ）、ファイルサイズ（15 MB 以下）、CSV の引用符の構文、行ごとの列数</li>
+    <li>列ヘッダー：公式の説明表・公式サンプルの列名との完全一致（大文字・小文字を区別）、列名の前後の空白、旧形式の列名</li>
+    <li>必須・条件付き必須：Title、Status、Packed product の4列、Inventory quantity、Fulfillment service など</li>
+    <li>値の形式：金額、true／false、Status などの有効値、重さ（グラムの整数）、ハンドルのスペース、タグ数、文字数の上限、画像URL など</li>
+  </ul>
+  <p>検査の根拠は、2026年11月17日時点で確認した Shopify ヘルプセンターの公開ページ（商品CSVの説明、インポート手順、よくあるインポートの問題、CSVファイルの一般説明）と公式サンプルCSVです。公式の記述は変更されることがあります。</p>
+
+  <h2>関連記事</h2>
+  <ul>
+    <li><a href="articles/mojibake.html">Shopify商品CSVの文字化け：原因と直し方</a></li>
+    <li><a href="articles/invalid-csv-header.html">Shopify商品CSVの「Invalid CSV header（無効なCSVヘッダー）」エラー：意味と直し方</a></li>
+    <li><a href="articles/pre-import-checklist.html">Shopify商品CSVのインポート前にやる事前チェック手順</a></li>
+  </ul>
+</main>
+
+<footer class="site">
+  <p>本サイトは非公式のツール・記事です。Shopify社による提供・提携・推奨を受けたものではありません。Shopify は Shopify Inc. の商標です。公式サイト：<a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a></p>
+  <p>チェック結果はインポートの成功を保証しません。</p>
+</footer>
+
+<script src="checker.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

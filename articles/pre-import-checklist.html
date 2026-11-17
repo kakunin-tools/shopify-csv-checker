@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Shopify商品CSVのインポート前にやる事前チェック手順（非公式ガイド）</title>
+<meta name="description" content="Shopifyに商品CSVをインポートする前に確認したい項目を、公式ヘルプの記述の範囲で手順としてまとめた非公式ガイドです。">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site">
+  <p class="title">Shopify商品CSV 事前チェッカー（非公式）</p>
+  <nav class="site">
+    <a href="../index.html">チェッカー</a>
+    <a href="mojibake.html">文字化けの原因と直し方</a>
+    <a href="invalid-csv-header.html">「無効なCSVヘッダー」の意味と直し方</a>
+    <a href="pre-import-checklist.html">インポート前チェック手順</a>
+  </nav>
+</header>
+<main>
+  <h1>Shopify商品CSVのインポート前にやる事前チェック手順</h1>
+
+  <div class="notice">
+    <p>この記事は非公式の解説です。Shopify社とは提携・推奨等の関係はありません。Shopify の公式サイトは <a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a> です。</p>
+    <p>内容は、2026年11月17日時点で確認した Shopify ヘルプセンターの公開ページの記述の範囲に限っています。ここに挙げた確認をすべて行っても、インポートの成功が保証されるわけではありません。</p>
+    <p class="scope">この記事の対象：Shopify商品CSV・標準テンプレート・バリエーションなし・1商品1レコード・新規下書き登録。</p>
+  </div>
+
+  <h2>手順1：ファイル全体を確認する</h2>
+  <ul>
+    <li><strong>文字コードは UTF-8</strong>。公式の必須条件です（<a href="mojibake.html">文字化けの記事</a>も参照）。</li>
+    <li><strong>ファイルサイズは 15 MB 以下</strong>。超える場合は複数のファイルに分割するよう公式に案内されています。</li>
+    <li><strong>引用符の使い方</strong>。カンマを含む値（例：タグの一覧）は <code>"tag1,tag2,tag3"</code> のようにストレートな引用符で囲みます。曲がり引用符（“ ”）を囲みに使ったり、引用符が不足・余分だったりすると、エラー（Illegal quoting／Missing or stray quote）の原因になります。</li>
+    <li><strong>各行の列数</strong>がヘッダーと同じであること。</li>
+  </ul>
+
+  <h2>手順2：1行目（列ヘッダー）を確認する</h2>
+  <ul>
+    <li>列名は公式の説明表・公式サンプルCSVと<strong>完全一致</strong>させる（大文字・小文字を区別）。</li>
+    <li>列名の前後、特に<strong>1行目の末尾に余分な空白</strong>がないこと。</li>
+    <li>詳しくは<a href="invalid-csv-header.html">「Invalid CSV header（無効なCSVヘッダー）」の記事</a>を参照してください。</li>
+  </ul>
+
+  <h2>手順3：必須の値を確認する</h2>
+  <ul>
+    <li>新規商品のインポートで必須の列は <strong>Title</strong> のみです。各商品の行に Title を入れます。</li>
+    <li><strong>URL handle</strong> は空でもかまいません（Title から自動で作られます）。ただしスペースは含められません。</li>
+    <li><strong>Status</strong> 列を置く場合は値が必要です（<code>active</code>／<code>draft</code>／<code>archived</code>）。列がない場合は自動で <code>active</code> になります。下書きとして登録するなら <code>draft</code>。</li>
+    <li><strong>Fulfillment service</strong> 列を置く場合、空欄はエラーになる旨が公式にあります。使わない場合は <code>manual</code>。</li>
+    <li><strong>Inventory tracker</strong> を設定する（在庫を追跡する）場合は、<strong>Inventory quantity</strong> に数値が必要です。</li>
+    <li><strong>Packed product length／width／height／dimension unit</strong> の4列は、すべて埋めるかすべて空欄にします（その行の Requires shipping が false の場合を除く）。</li>
+    <li><strong>Price</strong> は、説明表では既定値 0.00 とされる一方、公式のエラー一覧には「price can't be blank」もあり、どの条件でエラーになるかは公式で確認できていません。価格は入れておくのが無難です。</li>
+  </ul>
+
+  <h2>手順4：値の形式を確認する</h2>
+  <ul>
+    <li>金額（Price、Compare-at price、Cost per item）は<strong>通貨記号なしの数値</strong>（例 <code>9.99</code>）。</li>
+    <li>true／false の列（Published on online store、Charge tax、Requires shipping、Gift card）は <code>true</code> または <code>false</code>。</li>
+    <li>Continue selling when out of stock は <code>deny</code> または <code>continue</code>。</li>
+    <li>Weight value (grams) は<strong>グラム単位の数値のみ</strong>（単位・小数点なし。例 5.125 kg → <code>5125</code>）。</li>
+    <li>Weight unit for display は <code>g</code>／<code>kg</code>／<code>lb</code>／<code>oz</code>、Packed product dimension unit は <code>cm</code>／<code>in</code>。</li>
+    <li>Tags は1商品あたり最大250個。Collection は最大255文字、Image alt text は最大512文字、SEO title は最大70文字、SEO description は最大320文字。</li>
+    <li>Product image URL は <code>https://</code> で始まる公開アクセス可能な URL で、ファイル名に <code>_thumb</code>／<code>_small</code>／<code>_medium</code> を含めない。</li>
+    <li>ギフトカードは CSV インポートでは作成できず、管理画面でのみ作成できる旨が公式にあります。</li>
+    <li>有効値は公式の説明表では小文字で書かれていますが、公式サンプルCSVには <code>TRUE</code> や <code>Active</code> などの大文字表記も含まれます。大文字・小文字の受理範囲は公式では確認できていません。</li>
+  </ul>
+
+  <h2>手順5：事前チェッカーで確認する</h2>
+  <p>手順1〜4の多くは、<a href="../index.html">事前チェッカー</a>にファイルを入れると一度に確認できます。ファイルはブラウザ内だけで処理し、送信しません。</p>
+  <ol>
+    <li><a href="../index.html">チェッカー</a>を開き、商品CSVを選びます。</li>
+    <li>「仕様不適合」が出たら、表示された物理行・列名・原因・期待形式に沿って直します。</li>
+    <li>「注意」は、公式では確認できていない点や想定用途とのずれです。内容を読んで判断してください。</li>
+    <li>「対象外・未検査」は、チェッカーが確認していない事項です。<strong>合格を意味しません。</strong></li>
+  </ol>
+
+  <h2>チェッカーが確認しないこと</h2>
+  <ul>
+    <li>バリエーション（同じハンドルの複数行、Option2／Option3 の使用など）を含む行の値</li>
+    <li>Product category や Google Product Category がタクソノミーに一致するか</li>
+    <li>ストアにすでにある商品のハンドルとの重複、カスタムのフルフィルメントサービスがストアに登録済みか、画像URLに実際にアクセスできるか</li>
+    <li>15 MB 以外の上限（行数上限等は未検査）、商品の更新（上書き）用途の条件</li>
+  </ul>
+  <p>チェッカーの結果は仕様ベースの事前チェックであり、実際のインポート結果はご自身のストアで確認してください。</p>
+
+  <h2>関連記事</h2>
+  <ul>
+    <li><a href="mojibake.html">文字化けの原因と直し方</a></li>
+    <li><a href="invalid-csv-header.html">「Invalid CSV header（無効なCSVヘッダー）」エラーの意味と直し方</a></li>
+  </ul>
+</main>
+<footer class="site">
+  <p>本サイトは非公式のツール・記事です。Shopify社による提供・提携・推奨を受けたものではありません。公式サイト：<a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a></p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<title>Shopify商品CSVの「Invalid CSV header（無効なCSVヘッダー）」エラー：意味と直し方（非公式ガイド）</title>
+<meta name="description" content="Shopifyの商品CSVインポートで出る「Invalid CSV header」エラーについて、公式ヘルプの記述の範囲で意味と直し方をまとめた非公式ガイドです。">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<header class="site">
+  <p class="title">Shopify商品CSV 事前チェッカー（非公式）</p>
+  <nav class="site">
+    <a href="../index.html">チェッカー</a>
+    <a href="mojibake.html">文字化けの原因と直し方</a>
+    <a href="invalid-csv-header.html">「無効なCSVヘッダー」の意味と直し方</a>
+    <a href="pre-import-checklist.html">インポート前チェック手順</a>
+  </nav>
+</header>
+<main>
+  <h1>「Invalid CSV header（無効なCSVヘッダー）」エラーの意味と直し方</h1>
+
+  <div class="notice">
+    <p>この記事は非公式の解説です。Shopify社とは提携・推奨等の関係はありません。Shopify の公式サイトは <a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a> です。</p>
+    <p>内容は、2026年11月17日時点で確認した Shopify ヘルプセンターの公開ページの記述の範囲に限っています。エラー名は公式ヘルプ（英語版）の表記「Invalid CSV header: missing headers」を元にしており、「無効なCSVヘッダー」はこの記事での訳です。管理画面の日本語表示の文言とは異なる場合があります。</p>
+  </div>
+
+  <h2>このエラーの意味</h2>
+  <p>商品CSVの<strong>1行目（列ヘッダー）</strong>が、Shopify が期待する列名と一致していないことを示すエラーです。公式ヘルプでは次のように説明されています。</p>
+  <ul>
+    <li>商品CSVの1行目は、商品CSVの説明表で指定された列ヘッダーでなければなりません。各列はカンマで区切ります。</li>
+    <li>列ヘッダー名は<strong>大文字・小文字を区別</strong>します。ヘッダーがサンプルファイルと正確に一致しないとエラーになる旨が、トラブルシューティングに記載されています。</li>
+    <li>「Invalid CSV header: missing headers」の対処として、<strong>1行目の末尾の余分な空白</strong>を確認するよう案内されています。</li>
+    <li>また「Network error: Unexpected token &lt; in JSON at position 0」というエラーも、列タイトルがテンプレートのヘッダーと正確に一致しない（大文字・小文字を含む）場合のものとして案内されています。</li>
+  </ul>
+
+  <h2>よくある原因と直し方</h2>
+  <h3>1. 列名のつづり・大文字小文字が違う</h3>
+  <p>例：<code>title</code>（小文字）や <code>Colour</code> のように、公式の列名と完全一致しない列名。公式のサンプルCSVの1行目、または商品CSVの説明表の列名に合わせて直します（例 <code>Title</code>、<code>URL handle</code>、<code>Price</code>）。不要な列なら削除します。</p>
+
+  <h3>2. 列名の前後に余分な空白がある</h3>
+  <p>例：<code>Title </code>（末尾に空白）。特に1行目の末尾の空白は見落としやすい箇所です。空白を削除して、列名を完全一致させます。</p>
+
+  <h3>3. 旧形式の列名を使っている</h3>
+  <p>公式ヘルプのトラブルシューティングには、<code>Handle</code>、<code>Body (HTML)</code>、<code>Variant Price</code>、<code>Image Src</code> などの列名を使った1行目の例が載っています。一方、現行の商品CSVの説明表と公式サンプルでは <code>URL handle</code>、<code>Description</code>、<code>Price</code>、<code>Product image URL</code> などの列名が使われています。<strong>旧形式の列名が現行のインポートで受理されるかどうかは、公式ヘルプでは確認できていません。</strong>確実を期すなら、公式サンプルCSVの1行目の列名に合わせることを検討してください。</p>
+
+  <h3>4. 公式資料どうしで表記が違う列</h3>
+  <p>いくつかの列は、説明表と公式サンプルで表記が異なります（例：説明表の <code>Barcodes</code> とサンプルの <code>Variant Barcodes</code>、説明表の <code>Option1 LinkedTo</code> とサンプルの <code>Option1 Linked To</code>、<code>Google Shopping / Google Product Category</code> と <code>Google Shopping / Google product category</code>）。どちらが現行のインポートで受理されるかは、公式ヘルプでは確認できていません。</p>
+
+  <h2>事前チェッカーでの確認</h2>
+  <p><a href="../index.html">事前チェッカー</a>は、1行目の各列名を公式の説明表・公式サンプルの列名と照合し、次のように表示します。</p>
+  <ul>
+    <li>どの公式列名とも一致しない列名 → 「仕様不適合（C07）」。大文字・小文字だけが違う場合はその旨も表示します。</li>
+    <li>列名の前後の空白 → 「仕様不適合（C08）」。</li>
+    <li>旧形式の列名 → 「注意（C09）：現行インポートでの受理可否は公式未確認」。このとき値の検査は行わず「対象外・未検査」と表示します。</li>
+    <li>公式資料どうしで表記が違う列 → 「注意（C07）：受理可否は公式未確認」。</li>
+  </ul>
+  <p>チェッカーの結果はインポートの成功を保証するものではありません。ファイルはブラウザ内だけで処理し、送信しません。</p>
+
+  <h2>関連記事</h2>
+  <ul>
+    <li><a href="mojibake.html">文字化けの原因と直し方</a></li>
+    <li><a href="pre-import-checklist.html">インポート前にやる事前チェック手順</a></li>
+  </ul>
+</main>
+<footer class="site">
+  <p>本サイトは非公式のツール・記事です。Shopify社による提供・提携・推奨を受けたものではありません。公式サイト：<a href="https://www.shopify.com/" rel="noopener noreferrer">www.shopify.com</a></p>
+</footer>
+</body>
+</html>
